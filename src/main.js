@@ -12,18 +12,3 @@ http.createServer(function (request, response) {
 
 // Console will print the message
 console.log('Server running at http://127.0.0.1:8081/');
-
-const { Contract } = require('fabric-contract-api');
-
-export class Recruiter extends Contract {
-	async CreateRecruiter(ctx, id, name, company) {
-        const recruiter= {
-            ID: id,
-            Name: name,
-            Company: company
-        };       
-        await ctx.stub.putState(id, Buffer.from(JSON.stringify(recruiter)));
-    }
-}
-
-
