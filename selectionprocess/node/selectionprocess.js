@@ -32,7 +32,7 @@ var Chaincode = class {
     let description = args[5];
     let job = args[6];
     
-    let key = stub.createCompositeKey("selectionprocess", [recruiter, id]);
+    let key = stub.createCompositeKey('selectionprocess', [recruiter, id]);
     
     const selectionprocess = {
     	ID: id,
@@ -86,7 +86,7 @@ var Chaincode = class {
     let description = args[5];
     let job = args[6];
 
-    let key = stub.createCompositeKey("selectionprocess", [recruiter, id]);
+    let key = stub.createCompositeKey('selectionprocess', [recruiter, id]);
     
     const selectionprocess = {
     	ID: id,
@@ -118,7 +118,7 @@ var Chaincode = class {
     let allResults = [];
     let res = { done: false, value: null };
     let jsonRes = {};
-    res = await stub.getStateByPartialCompositeKey("selectionprocess", [recruiter]);
+    res = await stub.getStateByPartialCompositeKey('selectionprocess', [recruiter]);
   
     while (!res.done) {
       jsonRes.Key = res.value.key;
@@ -135,8 +135,8 @@ var Chaincode = class {
     await iterator.close();
 
     console.info('Query Response:');
-    console.info(allResults);
-    return allResults;
+    console.info(JSON.stringify(allResults));
+    return JSON.stringify(allResults);
   }
 
   async RetrieveSelectionProcess(stub, args) {
@@ -150,7 +150,7 @@ var Chaincode = class {
 
     let id = args[0];
     let recruiter = args[1];
-    let key = stub.createCompositeKey("selectionprocess", [recruiter, id]);
+    let key = stub.createCompositeKey('selectionprocess', [recruiter, id]);
 
     // Get the state from the ledger
     let selectionprocessBytes = await stub.getState(key);
@@ -171,12 +171,8 @@ var Chaincode = class {
       throw new Error('Incorrect number of arguments. Expecting id range of the seleection processes to query');
     }
 
-    if (typeof parseInt(args[0]) !== 'number' || typeof parseInt(args[1]) !== 'number') {
-      return shim.error('Expecting integer value for ids');
-    }
-
-    let startKey = args[0];
-    let endKey = args[1];
+    let startKey = stub.createCompositeKey('selectionprocess', args[0].split(","));
+    let endKey = stub.createCompositeKey('selectionprocess', args[1].split(","));
 
     // Get the state from the ledger
     let selectionprocessBytes = await stub.getStateByRange(startKey, endKey);
@@ -206,7 +202,7 @@ var Chaincode = class {
     let recruiter = args[2];
     let droped = args[3].split(",");
     
-    let key = stub.createCompositeKey("selectionprocess", [recruiter, id]);
+    let key = stub.createCompositeKey('selectionprocess', [recruiter, id]);
 
     // Get the state from the ledger
     let selectionprocessBytes = await stub.getState(key);
