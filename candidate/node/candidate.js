@@ -81,7 +81,7 @@ var Chaincode = class {
     
     let candidateString = JSON.stringify(candidate);
     await stub.putState(id, candidateString);
-    return candidateString;
+    return "DONE";
   }
 
   async RetrieveCandidate(stub, args) {
@@ -106,7 +106,7 @@ var Chaincode = class {
     let candidateString = JSON.stringify(JSON.parse(candidateBytes));
     console.info('Query Response:');
     console.info(candidateString);
-    return candidateString;
+    return candidateBytes;
   }
 
   async RetrieveCandidateRange(stub, args) {
@@ -120,19 +120,41 @@ var Chaincode = class {
 
     let startKey = args[0];
     let endKey = args[1];
+    let allResults = [];
 
     // Get the state from the ledger
-    let candidatesBytes = await stub.getStateByRange(startKey, endKey);
-    if (!candidateBytes) {
+    let iterator = await stub.getStateByRange(startKey, endKey);
+    if (!iterator) {
       let e = {};
       e.error = 'Failed to get state for ' + id;
       throw new Error(JSON.stringify(e));
-    }
+    }else{
+      while (true) {
+        let res = await iterator.next()
+        if (res.value && res.value.value.toString()) {
+            let jsonRes = {};
+            console.log(res.value.value.toString());
 
-    let candidateString = JSON.stringify(JSON.parse(candidateBytes));
+            jsonRes.Key = res.value.key;
+          try {
+            jsonRes.Record = JSON.parse(res.value.value.toString());
+          } catch (err) {
+            console.log(err);
+            jsonRes.Record = res.value.value.toString();
+          }
+
+          allResults.push(jsonRes);
+        }
+        if (res.done) {
+          await iterator.close();
+          break;
+        }
+      }
+    }
+    let candidatesString = JSON.stringify(allResults);
     console.info('Query Response:');
-    console.info(candidateString);
-    return candidateString;
+    console.info(candidatesString);
+    return Buffer.from(candidatesString);
   }
 };
 

@@ -32,8 +32,6 @@ var Chaincode = class {
     let description = args[5];
     let job = args[6];
     
-    let key = stub.createCompositeKey('selectionprocess', [recruiter, id]);
-    
     const selectionprocess = {
     	ID: id,
     	CurrentStage: currStage,
@@ -45,7 +43,7 @@ var Chaincode = class {
     };
 
     try {
-      await stub.putState(key, Buffer.from(JSON.stringify(selectionprocess)));
+      await stub.putState(id, Buffer.from(JSON.stringify(selectionprocess)));
       return shim.success();
     } catch (err) {
       return shim.error(err);
@@ -85,75 +83,36 @@ var Chaincode = class {
     let stages = args[4].split(",");
     let description = args[5];
     let job = args[6];
-
-    let key = stub.createCompositeKey('selectionprocess', [recruiter, id]);
     
     const selectionprocess = {
     	ID: id,
     	CurrentStage: currStage,
     	Stages: stages,
     	Candidates: candidates,
+    	Dropped: [],
     	Recruiter: recruiter,
     	Description: description,
     	Job: job
     };
 
     let selectionprocessString = JSON.stringify(selectionprocess);
-    await stub.putState(key, selectionprocessString);
-    return selectionprocessString;
+    await stub.putState(id, selectionprocessString);
+    return Buffer.from("DONE");
   }
 
-  async RetrieveSelectionProcessByRecruiter(stub, args) {
+  async RetrieveSelectionProcess(stub, args) {
     if (args.length != 1) {
-      throw new Error('Incorrect number of arguments. Expecting id of the selection process to query');
+      throw new Error('Incorrect number of arguments. Expecting id of the selectionprocess to query');
     }
 
     if (typeof parseInt(args[0]) !== 'number') {
       return shim.error('Expecting integer value for id');
     }
 
-    let recruiter = args[0];
-
-    // Get the state from the ledger
-    let allResults = [];
-    let res = { done: false, value: null };
-    let jsonRes = {};
-    res = await stub.getStateByPartialCompositeKey('selectionprocess', [recruiter]);
-  
-    while (!res.done) {
-      jsonRes.Key = res.value.key;
-
-      try {
-        jsonRes.Record = JSON.parse(res.value.value.toString('utf8'));
-        allResults.push(jsonRes);
-        res = await iterator.next();
-      }catch (err) {
-          console.log(err);
-          return {}
-      }
-    }
-    await iterator.close();
-
-    console.info('Query Response:');
-    console.info(JSON.stringify(allResults));
-    return JSON.stringify(allResults);
-  }
-
-  async RetrieveSelectionProcess(stub, args) {
-    if (args.length != 2) {
-      throw new Error('Incorrect number of arguments. Expecting id of the selection process to query');
-    }
-
-    if (typeof parseInt(args[0]) !== 'number' || typeof parseInt(args[1]) !== 'number') {
-      return shim.error('Expecting integer value for id');
-    }
-
     let id = args[0];
-    let recruiter = args[1];
-    let key = stub.createCompositeKey('selectionprocess', [recruiter, id]);
 
     // Get the state from the ledger
-    let selectionprocessBytes = await stub.getState(key);
+    let selectionprocessBytes = await stub.getState(id);
     if (!selectionprocessBytes) {
       let e = {};
       e.error = 'Failed to get state for ' + id;
@@ -163,16 +122,15 @@ var Chaincode = class {
     let selectionprocessString = JSON.stringify(JSON.parse(selectionprocessBytes));
     console.info('Query Response:');
     console.info(selectionprocessString);
-    return selectionprocessString;
+    return selectionprocessBytes;
   }
-
   async RetrieveSelectionProcessRange(stub, args) {
     if (args.length != 2) {
       throw new Error('Incorrect number of arguments. Expecting id range of the seleection processes to query');
     }
 
-    let startKey = stub.createCompositeKey('selectionprocess', args[0].split(","));
-    let endKey = stub.createCompositeKey('selectionprocess', args[1].split(","));
+    let startKey = args[0];
+    let endKey = args[1];
 
     // Get the state from the ledger
     let selectionprocessBytes = await stub.getStateByRange(startKey, endKey);
@@ -185,7 +143,7 @@ var Chaincode = class {
     let selectionprocessString = JSON.stringify(JSON.parse(selectionprocessBytes));
     console.info('Query Response:');
     console.info(selectionprocessString);
-    return selectionprocessString;
+    return selectionprocessBytes;
   }
   
   async AdvanceSelectionProcess(stub, args) {
@@ -193,19 +151,17 @@ var Chaincode = class {
       throw new Error('Incorrect number of arguments. Expecting id of the resume to update');
     }
 
-    if (typeof parseInt(args[0]) !== 'number' || typeof parseInt(args[1]) !== 'number' || typeof parseInt(args[2]) !== 'number') {
+    if (typeof parseInt(args[0]) !== 'number' || typeof parseInt(args[1]) !== 'number') {
       return shim.error('Expecting integer value for id and stage');
     }
 
     let id = args[0];
     let nextStage = args[1];
-    let recruiter = args[2];
-    let droped = args[3].split(",");
+    let droped = args[2].split(",");
     
-    let key = stub.createCompositeKey('selectionprocess', [recruiter, id]);
 
     // Get the state from the ledger
-    let selectionprocessBytes = await stub.getState(key);
+    let selectionprocessBytes = await stub.getState(id);
     if (!selectionprocessBytes) {
       let e = {};
       e.error = 'Failed to get state for ' + id;
@@ -214,26 +170,11 @@ var Chaincode = class {
 
     let selectionprocess = JSON.parse(selectionprocessBytes);
     
-    let remaining = [];
-    selectionprocess.Candidates.forEach((candidate) => {
-      if(!droped.includes(candidate)){
-        remaining.push(candidate);
-      };
-    });
-    
-    const updatedSelectionprocess = {
-      ID: selectionprocess.ID,
-      CurrentStage: nextStage,
-      Stages: selectionprocess.Stages,
-      Candidates: remaining,
-      Recruiter: selectionprocess.Recruiter,
-      Description: selectionprocess.Description,
-      Job: selectionprocess.Job
-    };
+    selectionprocess.Dropped = selectionprocess.Dropped.concat(droped);
 
-    let updatedSelectionprocessString = JSON.stringify(updatedSelectionprocess);
+    let updatedSelectionprocessString = JSON.stringify(selectionprocess);
     await stub.putState(id, Buffer.from(updatedSelectionprocessString));
-    return updatedSelectionprocessString;
+    return Buffer.from("DONE");
   }
 };
 

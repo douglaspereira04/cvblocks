@@ -80,7 +80,7 @@ var Chaincode = class {
     
     let recruiterString = JSON.stringify(recruiter);
     await stub.putState(id, recruiterString);
-    return recruiterString;
+    return Buffer.from("DONE");
   }
 
   async RetrieveRecruiter(stub, args) {
@@ -105,7 +105,7 @@ var Chaincode = class {
     let recruiterString = JSON.stringify(JSON.parse(recruiterBytes));
     console.info('Query Response:');
     console.info(recruiterString);
-    return recruiterString;
+    return recruiterBytes;
   }
 
   async RetrieveRecruiterRange(stub, args) {
@@ -131,7 +131,7 @@ var Chaincode = class {
     let recruiterString = JSON.stringify(JSON.parse(recruiterBytes));
     console.info('Query Response:');
     console.info(recruiterString);
-    return recruiterString;
+    return recruiterBytes;
   }
 };
 

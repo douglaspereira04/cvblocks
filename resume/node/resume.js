@@ -77,7 +77,7 @@ var Chaincode = class {
     
     let resumeString = JSON.stringify(resume);
     await stub.putState(id, resumeString);
-    return resumeString;
+    return Buffer.from("DONE");
   }
 
   async RetrieveResume(stub, args) {
@@ -102,7 +102,7 @@ var Chaincode = class {
     let resumeString = JSON.stringify(JSON.parse(resumeBytes));
     console.info('Query Response:');
     console.info(resumeString);
-    return resumeString;
+    return resumeBytes;
   }
   
   
@@ -134,7 +134,7 @@ var Chaincode = class {
     
     let resumeString = JSON.stringify(resume);
     await stub.putState(id, resumeString);
-    return resumeString;
+    return Buffer.from("DONE");
   }
 
 };
