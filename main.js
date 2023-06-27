@@ -60,7 +60,7 @@ async function invoke(body, res){
     
 
     res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Content-Type', 'application/json');
     res.write(JSON.stringify(result));
     res.end();
 
@@ -81,40 +81,44 @@ async function CreateCandidate(args){
   let id = candidateID;
   await candidate.submitTransaction("CreateCandidate", id, args.name, args.resume);
   candidateID += 1;
-  return "{\"id\":"+id+"}";
+  let response = {"id": id};
+  return response;
 }
 
 async function RetrieveCandidate(args){
-  return (await candidate.submitTransaction("RetrieveCandidate", args.id)).toString();
+  return JSON.parse((await candidate.submitTransaction("RetrieveCandidate", args.id)).toString());
 }
 
 async function RetrieveAllCandidates(args){
   let array = [];
   for (let index = 1; index < candidateID; index++) {
-    let res = await candidate.submitTransaction("RetrieveCandidate", index);
+    let res = JSON.parse((await candidate.submitTransaction("RetrieveCandidate", index)).toString());
     array.push(res);
   }
-  return array.toString();
+  let response = {"data": array};
+  return response;
 }
 
 async function CreateResume(args){
   let id = resumeID;
   await resume.submitTransaction("CreateResume", id, args.listInfo);
   resumeID += 1;
-  return "{\"id\":"+id+"}";
+  let response = {"id": id};
+  return response;
 }
 
 async function RetrieveResume(args){
-  return (await resume.submitTransaction("RetrieveResume", args.id)).toString();
+  return JSON.parse((await resume.submitTransaction("RetrieveResume", args.id)).toString());
 }
 
 async function RetrieveAllResumes(args){
   let array = [];
   for (let index = 1; index < resumeID; index++) {
-    let res = await resume.submitTransaction("RetrieveResume", index);
+    let res = JSON.parse((await resume.submitTransaction("RetrieveResume", index)).toString());
     array.push(res);
   }
-  return array.toString();
+  let response = {"data": array};
+  return response;
 }
 
 
@@ -122,20 +126,22 @@ async function CreateRecruiter(args){
   let id = recruiterID;
   await recruiter.submitTransaction("CreateRecruiter", id, args.name, args.company);
   recruiterID += 1;
-  return "{\"id\":"+id+"}";
+  let response = {"id": id};
+  return response;
 }
 
 async function RetrieveRecruiter(args){
-  return (await recruiter.submitTransaction("RetrieveRecruiter", args.id)).toString();
+  return JSON.parse((await recruiter.submitTransaction("RetrieveRecruiter", args.id)).toString());
 }
 
 async function RetrieveAllRecruiters(args){
   let array = [];
   for (let index = 1; index < recruiterID; index++) {
-    let res = await recruiter.submitTransaction("RetrieveRecruiter", index);
+    let res = JSON.parse((await recruiter.submitTransaction("RetrieveRecruiter", index)).toString());
     array.push(res);
   }
-  return array.toString();
+  let response = {"data": array};
+  return response;
 }
 
 async function CreateSelectionProcess(args){
@@ -150,115 +156,86 @@ async function CreateSelectionProcess(args){
     args.job
   );
   selectionprocessID += 1;
-  return "{\"id\":"+id+"}";
+  let response = {"id": id};
+  return response;
 }
 
 async function RetrieveSelectionProcess(args){
-  return (await selectionprocess.submitTransaction("RetrieveSelectionProcess", args.id)).toString();
+  return JSON.parse((await selectionprocess.submitTransaction("RetrieveSelectionProcess", args.id)).toString());
 }
 
 async function RetrieveAllSelectionProcess(args){
   let array = [];
   for (let index = 1; index < selectionprocessID; index++) {
-    let res = await selectionprocess.submitTransaction("RetrieveSelectionProcess", index);
+    let res = JSON.parse((await selectionprocess.submitTransaction("RetrieveSelectionProcess", index)).toString());
     array.push(res);
   }
-  return array.toString();
+  let response = {"data": array};
+  return response;
 }
 
 
 async function AdvanceSelectionProcess(args){
-  return (await selectionprocess.submitTransaction("AdvanceSelectionProcess", args.id, args.nextStage, args.rejected)).toString();
+  let result = (await selectionprocess.submitTransaction("AdvanceSelectionProcess", args.id, args.nextStage, args.rejected)).toString();
+  return {"result": result};
 }
 
 async function RetrieveCandidateSelectionProcess(args){
   let candidateSelectionProcess = [];
-  let allSelectionProcess = (await RetrieveAllSelectionProcess(args)).split("},");
-  for (let index = 0; index < allSelectionProcess.length-1; index++) {
+  let allSelectionProcess = (await RetrieveAllSelectionProcess(args)).data;
+  for (let index = 0; index < allSelectionProcess.length; index++) {
     const selectionProcess = allSelectionProcess[index];
-    let jsonselectionProcess = JSON.parse(selectionProcess+"}");
-    if(jsonselectionProcess.Candidates.includes(args.id)){
-      candidateSelectionProcess.push(jsonselectionProcess);
+    if(selectionProcess.Candidates.includes(args.id)){
+      candidateSelectionProcess.push(selectionProcess);
     }
   }
-  const selectionProcess = allSelectionProcess[allSelectionProcess.length-1];
-  let jsonselectionProcess = JSON.parse(selectionProcess);
-  if(jsonselectionProcess.Candidates.includes(args.id)){
-    candidateSelectionProcess.push(jsonselectionProcess);
-  }
-  return JSON.stringify(candidateSelectionProcess);
+  return {"data":candidateSelectionProcess};
 }
 
 async function RetrieveRecruiterSelectionProcess(args){
   let recruiterSelectionProcess = [];
-  let allSelectionProcess = (await RetrieveAllSelectionProcess(args)).split("},");
-  for (let index = 0; index < allSelectionProcess.length-1; index++) {
+  let allSelectionProcess = (await RetrieveAllSelectionProcess(args)).data;
+  for (let index = 0; index < allSelectionProcess.length; index++) {
     const selectionProcess = allSelectionProcess[index];
-    let jsonselectionProcess = JSON.parse(selectionProcess+"}");
-    if(jsonselectionProcess.Recruiter == args.id){
-      recruiterSelectionProcess.push(jsonselectionProcess);
+    if(selectionProcess.Recruiter == args.id){
+      recruiterSelectionProcess.push(selectionProcess);
     }
   }
-  const selectionProcess = allSelectionProcess[allSelectionProcess.length-1];
-  let jsonselectionProcess = JSON.parse(selectionProcess);
-  if(jsonselectionProcess.Recruiter == args.id){
-    recruiterSelectionProcess.push(jsonselectionProcess);
-  }
-  return JSON.stringify(recruiterSelectionProcess);
+  return {"data":recruiterSelectionProcess};
 }
 
 async function SelectionProcessSearch(args){
   let matches = [];
   let words = args.words.split(" ");
-  let allSelectionProcess = (await RetrieveAllSelectionProcess(args)).split("},");
-  for (let index = 0; index < allSelectionProcess.length-1; index++) {
+  let allSelectionProcess = (await RetrieveAllSelectionProcess(args)).data;
+  for (let index = 0; index < allSelectionProcess.length; index++) {
     const selectionProcess = allSelectionProcess[index];
-    let jsonselectionProcess = JSON.parse(selectionProcess+"}");
     for (var i = 0; i < words.length; ++i) {
-      if(jsonselectionProcess.Description.includes(words[i])
-        || jsonselectionProcess.Job.includes(words[i])){
-          matches.push(jsonselectionProcess);
+      if(selectionProcess.Description.includes(words[i])
+        || selectionProcess.Job.includes(words[i])){
+          matches.push(selectionProcess);
           break;
       }
     }
   }
-  const selectionProcess = allSelectionProcess[allSelectionProcess.length-1];
-  let jsonselectionProcess = JSON.parse(selectionProcess);
-  for (var i = 0; i < words.length; ++i) {
-    if(jsonselectionProcess.Description.includes(words[i])
-      || jsonselectionProcess.Job.includes(words[i])){
-        matches.push(jsonselectionProcess);
-        break;
-    }
-  }
-  return JSON.stringify(matches);
+  return {"data":matches};
 }
 
 async function RecruiterSearch(args){
   let matches = [];
   let words = args.words.split(" ");
-  let allRecruiters = (await allRecruiters(args)).split("},");
-  for (let index = 0; index < allRecruiters.length-1; index++) {
+  let allRecruiters = (await RetrieveAllRecruiters(args)).data;
+  for (let index = 0; index < allRecruiters.length; index++) {
     const recruiter = allRecruiters[index];
-    let jsonrecruiter = JSON.parse(recruiter+"}");
     for (var i = 0; i < words.length; ++i) {
-      if(jsonrecruiter.Name.contains(words[i])
-        || jsonrecruiter.Company.contains(words[i])){
-          matches.push(jsonrecruiter);
+      if(recruiter.Name.contains(words[i])
+        || recruiter.Company.contains(words[i])){
+          matches.push(recruiter);
           break;
       }
     }
   }
-  const recruiter = allRecruiters[allRecruiters.length-1];
-  let jsonrecruiter = JSON.parse(recruiter);
-    for (var i = 0; i < words.length; ++i) {
-      if(jsonrecruiter.Name.contains(words[i])
-        || jsonrecruiter.Company.contains(words[i])){
-          matches.push(jsonrecruiter);
-          break;
-      }
-    }
-  return JSON.stringify(matches);
+  return {"data":matches};
 }
 
 async function startServer(req, res) {
