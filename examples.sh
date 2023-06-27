@@ -55,3 +55,7 @@ curl -i -X POST -H 'Content-Type: application/json' -d '{"func": "RetrieveRecrui
 curl -i -X POST -H 'Content-Type: application/json' -d '{"func": "SelectionProcessSearch", "args": {"words":"Universidade UFSC"}}' $invocation
 
 curl -i -X POST -H 'Content-Type: application/json' -d '{"func": "SelectionProcessSearch", "args": {"words":"Serviços"}}' $invocation
+
+curl -i -X POST -H 'Content-Type: application/json' -d '{"func": "AdvanceSelectionProcess", "args": {"id":"1","nextStage":"1","rejected":["2"]}}' $invocation
+
+curl -i -X POST -H 'Content-Type: application/json' -d '{"func": "RetrieveSelectionProcess", "args": {"id":"1"}}' $invocation

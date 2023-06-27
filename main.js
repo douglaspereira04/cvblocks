@@ -166,6 +166,11 @@ async function RetrieveAllSelectionProcess(args){
   return array.toString();
 }
 
+
+async function AdvanceSelectionProcess(args){
+  return (await selectionprocess.submitTransaction("AdvanceSelectionProcess", args.id, args.nextStage, args.rejected)).toString();
+}
+
 async function RetrieveCandidateSelectionProcess(args){
   let candidateSelectionProcess = [];
   let allSelectionProcess = (await RetrieveAllSelectionProcess(args)).split("},");

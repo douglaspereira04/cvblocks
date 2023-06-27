@@ -37,6 +37,7 @@ var Chaincode = class {
     	CurrentStage: currStage,
     	Stages: stages,
     	Candidates: candidates,
+    	Rejected: [],
     	Recruiter: recruiter,
     	Description: description,
     	Job: job
@@ -89,7 +90,7 @@ var Chaincode = class {
     	CurrentStage: currStage,
     	Stages: stages,
     	Candidates: candidates,
-    	Dropped: [],
+    	Rejected: [],
     	Recruiter: recruiter,
     	Description: description,
     	Job: job
@@ -147,8 +148,8 @@ var Chaincode = class {
   }
   
   async AdvanceSelectionProcess(stub, args) {
-    if (args.length != 4) {
-      throw new Error('Incorrect number of arguments. Expecting id of the resume to update');
+    if (args.length != 3) {
+      throw new Error('Incorrect number of arguments. Expecting id of the selectionprocess to update');
     }
 
     if (typeof parseInt(args[0]) !== 'number' || typeof parseInt(args[1]) !== 'number') {
@@ -157,7 +158,7 @@ var Chaincode = class {
 
     let id = args[0];
     let nextStage = args[1];
-    let droped = args[2].split(",");
+    let rejected = args[2].split(",");
     
 
     // Get the state from the ledger
@@ -169,8 +170,8 @@ var Chaincode = class {
     }
 
     let selectionprocess = JSON.parse(selectionprocessBytes);
-    
-    selectionprocess.Dropped = selectionprocess.Dropped.concat(droped);
+    selectionprocess.CurrentStage = nextStage;
+    selectionprocess.Rejected = selectionprocess.Rejected.concat(rejected);
 
     let updatedSelectionprocessString = JSON.stringify(selectionprocess);
     await stub.putState(id, Buffer.from(updatedSelectionprocessString));
