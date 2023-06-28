@@ -23,7 +23,7 @@ To run the server:
 After that, the output should display the address of the server.
 
 # Smart Contracts
-The Smart Contracts chaincode are written in Node.js in the directories:
+The Smart Contracts chaincode are written in Node.js in the files:
 - ```candidate/node/candidate.js```
 - ```recruiter/node/recruiter.js```
 - ```resume/node/resume.js```
