@@ -137,10 +137,10 @@ var Chaincode = class {
 
             jsonRes.Key = res.value.key;
           try {
-            jsonRes.Record = JSON.parse(res.value.value.toString());
+            jsonRes.Record = res.value.value;
           } catch (err) {
             console.log(err);
-            jsonRes.Record = res.value.value.toString();
+            jsonRes.Record = res.value.value;
           }
 
           allResults.push(jsonRes);
@@ -151,11 +151,11 @@ var Chaincode = class {
         }
       }
     }
-    let candidatesString = JSON.stringify(allResults);
-    console.info('Query Response:');
-    console.info(candidatesString);
-    return Buffer.from(candidatesString);
+    
+    let r = {"data": allResults};
+    return Buffer.from(JSON.stringify(r));
   }
 };
 
 shim.start(new Chaincode());
+

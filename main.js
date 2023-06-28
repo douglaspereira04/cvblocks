@@ -90,13 +90,12 @@ async function RetrieveCandidate(args){
 }
 
 async function RetrieveAllCandidates(args){
-  let array = [];
-  for (let index = 1; index < candidateID; index++) {
-    let res = JSON.parse((await candidate.submitTransaction("RetrieveCandidate", index)).toString());
-    array.push(res);
-  }
-  let response = {"data": array};
-  return response;
+  let res = JSON.parse((await candidate.submitTransaction("RetrieveCandidateRange", "1",candidateID)).toString());
+  let arr = []
+  res.data.forEach(record => {
+    arr.push(decode(record.Record));
+  });
+  return {"data":arr};
 }
 
 async function CreateResume(args){
@@ -112,13 +111,12 @@ async function RetrieveResume(args){
 }
 
 async function RetrieveAllResumes(args){
-  let array = [];
-  for (let index = 1; index < resumeID; index++) {
-    let res = JSON.parse((await resume.submitTransaction("RetrieveResume", index)).toString());
-    array.push(res);
-  }
-  let response = {"data": array};
-  return response;
+  let res = JSON.parse((await resume.submitTransaction("RetrieveResumeRange", "1",resumeID)).toString());
+  let arr = []
+  res.data.forEach(record => {
+    arr.push(decode(record.Record));
+  });
+  return {"data":arr};
 }
 
 
@@ -135,13 +133,12 @@ async function RetrieveRecruiter(args){
 }
 
 async function RetrieveAllRecruiters(args){
-  let array = [];
-  for (let index = 1; index < recruiterID; index++) {
-    let res = JSON.parse((await recruiter.submitTransaction("RetrieveRecruiter", index)).toString());
-    array.push(res);
-  }
-  let response = {"data": array};
-  return response;
+  let res = JSON.parse((await recruiter.submitTransaction("RetrieveRecruiterRange", "1",recruiterID)).toString());
+  let arr = []
+  res.data.forEach(record => {
+    arr.push(decode(record.Record));
+  });
+  return {"data":arr};
 }
 
 async function CreateSelectionProcess(args){
@@ -165,15 +162,13 @@ async function RetrieveSelectionProcess(args){
 }
 
 async function RetrieveAllSelectionProcess(args){
-  let array = [];
-  for (let index = 1; index < selectionprocessID; index++) {
-    let res = JSON.parse((await selectionprocess.submitTransaction("RetrieveSelectionProcess", index)).toString());
-    array.push(res);
-  }
-  let response = {"data": array};
-  return response;
+  let res = JSON.parse((await selectionprocess.submitTransaction("RetrieveSelectionProcessRange", "1",selectionprocessID)).toString());
+  let arr = []
+  res.data.forEach(record => {
+    arr.push(decode(record.Record));
+  });
+  return {"data":arr};
 }
-
 
 async function AdvanceSelectionProcess(args){
   let result = (await selectionprocess.submitTransaction("AdvanceSelectionProcess", args.id, args.nextStage, args.rejected)).toString();
@@ -274,3 +269,11 @@ const server = http.createServer(startServer).listen(port);
 
 console.log('Server running at port '+port);
 
+
+function decode(buffer){
+  const data = buffer.buffer.data.slice(buffer.offset,buffer.limit);
+  const uint8Array = new Uint8Array(data);
+  const decoder = new TextDecoder();
+  const str = decoder.decode(uint8Array);
+  return JSON.parse(str);
+}

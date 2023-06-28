@@ -137,6 +137,55 @@ var Chaincode = class {
     return Buffer.from("DONE");
   }
 
+  async RetrieveResumeRange(stub, args) {
+    if (args.length != 2) {
+      throw new Error('Incorrect number of arguments. Expecting id range of the resumes to query');
+    }
+
+    if (typeof parseInt(args[0]) !== 'number' || typeof parseInt(args[1]) !== 'number') {
+      return shim.error('Expecting integer value for ids');
+    }
+
+    let startKey = args[0];
+    let endKey = args[1];
+    let allResults = [];
+
+    // Get the state from the ledger
+    let iterator = await stub.getStateByRange(startKey, endKey);
+    if (!iterator) {
+      let e = {};
+      e.error = 'Failed to get state for ' + id;
+      throw new Error(JSON.stringify(e));
+    }else{
+      while (true) {
+        let res = await iterator.next()
+        if (res.value && res.value.value.toString()) {
+            let jsonRes = {};
+            console.log(res.value.value.toString());
+
+            jsonRes.Key = res.value.key;
+          try {
+            jsonRes.Record = res.value.value;
+          } catch (err) {
+            console.log(err);
+            jsonRes.Record = res.value.value;
+          }
+
+          allResults.push(jsonRes);
+        }
+        if (res.done) {
+          await iterator.close();
+          break;
+        }
+      }
+    }
+    
+    let r = {"data": allResults};
+    return Buffer.from(JSON.stringify(r));
+  }
+
 };
+
+
 
 shim.start(new Chaincode());

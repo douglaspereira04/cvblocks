@@ -110,7 +110,7 @@ var Chaincode = class {
 
   async RetrieveRecruiterRange(stub, args) {
     if (args.length != 2) {
-      throw new Error('Incorrect number of arguments. Expecting id range of the recruiters to query');
+      throw new Error('Incorrect number of arguments. Expecting id range of the recruiter to query');
     }
 
     if (typeof parseInt(args[0]) !== 'number' || typeof parseInt(args[1]) !== 'number') {
@@ -119,19 +119,40 @@ var Chaincode = class {
 
     let startKey = args[0];
     let endKey = args[1];
+    let allResults = [];
 
     // Get the state from the ledger
-    let recruiterBytes = await stub.getStateByRange(startKey, endKey);
-    if (!recruiterBytes) {
+    let iterator = await stub.getStateByRange(startKey, endKey);
+    if (!iterator) {
       let e = {};
       e.error = 'Failed to get state for ' + id;
       throw new Error(JSON.stringify(e));
-    }
+    }else{
+      while (true) {
+        let res = await iterator.next()
+        if (res.value && res.value.value.toString()) {
+            let jsonRes = {};
+            console.log(res.value.value.toString());
 
-    let recruiterString = JSON.stringify(JSON.parse(recruiterBytes));
-    console.info('Query Response:');
-    console.info(recruiterString);
-    return recruiterBytes;
+            jsonRes.Key = res.value.key;
+          try {
+            jsonRes.Record = res.value.value;
+          } catch (err) {
+            console.log(err);
+            jsonRes.Record = res.value.value;
+          }
+
+          allResults.push(jsonRes);
+        }
+        if (res.done) {
+          await iterator.close();
+          break;
+        }
+      }
+    }
+    
+    let r = {"data": allResults};
+    return Buffer.from(JSON.stringify(r));
   }
 };
 
