@@ -1,5 +1,5 @@
 # CVBlocks
-This project provides back-end environment to CVBlocks, an application designed to improve selection processes, using **blockchain** technology. 
+This project provides back-end environment to CVBlocks, an application designed to improve selection processes using **blockchain** technology. 
 The application was developed as a Blockchain and Cryptocurrencies Technologies course assignment.
 
 [Minifabric](https://github.com/hyperledger-labs/minifabric) is used to stand up a Fabric network in order to make available the required Smart Contracts. The **chaincode** was developed with **Node.js**.
