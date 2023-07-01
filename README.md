@@ -20,7 +20,7 @@ To run the server:
 ```bash
 ./app.sh up
 ```
-After that, the output should display the address of the server.
+After that, the output should display the **address of the server**.
 
 # Smart Contracts
 The Smart Contracts chaincode are written in Node.js in the files:
